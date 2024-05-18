@@ -1,7 +1,5 @@
 import os
-from unittest import result
 from flask import Flask, render_template, request
-from PIL import Image
 import requests
 from bs4 import BeautifulSoup
 from werkzeug.utils import secure_filename
