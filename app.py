@@ -42,6 +42,47 @@ def diagnosis():
                 uploaded_image = filename
                 image = cv2.imread(
                     os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                task_type = request.form.get('task', 'classification')
+
+                if task_type == 'classification':
+                    new_image = cv2.resize(image, (64, 64))
+                    new_image = np.expand_dims(new_image, axis=0)
+
+                    result = model.predict(new_image)
+                    result = np.argmax(result, axis=1)[0]
+                    if result == 1:
+                        result = "This image is abnormal."
+                    elif result == 0:
+                        result = "This image is normal."
+                    return render_template('diagnosis.html', uploaded_image=uploaded_image, result=result)
+                elif task_type == 'detection':
+                    image_copy = image.copy()
+                    window_size = (64, 64)
+                    stride = 64
+                    height, width, _ = image.shape
+                    predictions = []
+                    for y in range(0, height - window_size[1] + 1, stride):
+                        for x in range(0, width - window_size[0] + 1, stride):
+                            image_patch = image[y:y +
+                                                window_size[1], x:x+window_size[0]]
+                            image_patch = cv2.resize(image_patch, (64, 64))
+                            image_patch = np.expand_dims(image_patch, axis=0)
+                            prediction = model.predict(image_patch)
+                            prediction = np.argmax(prediction, axis=1)
+                            predictions.append(prediction)
+                            if prediction == 1:
+                                cv2.rectangle(image_copy, (x, y),
+                                              (x+window_size[1], y+window_size[1]), (255, 0, 0), 2)
+                    cv2.imwrite(os.path.join(
+                        'static/results/', filename), image_copy)
+
+                    count = 0
+                    for i in predictions:
+                        if i == 1:
+                            count += 1
+                    total = len(predictions)
+                    return render_template('diagnosis.html', uploaded_image=uploaded_image, result_image=filename, count=count, total=total)
+
                 # chuẩn hóa ảnh
                 # image = image / 255.0
                 # image_copy = image.copy()
@@ -92,18 +133,17 @@ def diagnosis():
                 #         count += 1
                 # total = len(predictions)
 
-                new_image = cv2.resize(image, (64, 64))
-                new_image = np.expand_dims(new_image, axis=0)
+                # new_image = cv2.resize(image, (64, 64))
+                # new_image = np.expand_dims(new_image, axis=0)
 
-                result = model.predict(new_image)
-                result = np.argmax(result, axis=1)[0]
-                if result == 1:
-                    result = "This image is abnormal."
-                elif result == 0:
-                    result = "This image is normal."
+                # result = model.predict(new_image)
+                # result = np.argmax(result, axis=1)[0]
+                # if result == 1:
+                #     result = "This image is abnormal."
+                # elif result == 0:
+                #     result = "This image is normal."
     else:
         return render_template('diagnosis.html')
-    return render_template('diagnosis.html', uploaded_image=uploaded_image, result=result)
 
 
 @app.route('/symtoms')
