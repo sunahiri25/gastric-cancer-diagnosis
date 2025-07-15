@@ -16,17 +16,17 @@ app.config['UPLOAD_FOLDER'] = 'static/images/'
 
 @app.route('/')
 def index():
-    titles, images, paragraphs, dates = get_news()
-    news = []
-    for i in range(3):
-        news.append({
-            'title': titles[i].text.strip(),
-            'link': "https://www.news-medical.net/"+titles[i].a['href'],
-            'image': images[i]['src'],
-            'paragraph': paragraphs[i].text.strip(),
-            'date': dates[i].text.strip()
-        })
-    return render_template('index.html', news=news)
+    # titles, images, paragraphs, dates = get_news()
+    # news = []
+    # for i in range(3):
+    #     news.append({
+    #         'title': titles[i].text.strip(),
+    #         'link': "https://www.news-medical.net/"+titles[i].a['href'],
+    #         'image': images[i]['src'],
+    #         'paragraph': paragraphs[i].text.strip(),
+    #         'date': dates[i].text.strip()
+    #     })
+    return render_template('index.html')
 
 
 @app.route('/diagnosis', methods=['GET', 'POST'])
